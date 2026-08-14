@@ -1,1040 +1,709 @@
-<html>
+<!DOCTYPE html>
 <html lang="de">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta name="theme-color" content="#0a0e17" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#06080f" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Lumen — Ambient</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --bg: #070a12;
-      --bg-elevated: rgba(18, 24, 38, 0.55);
-      --glass: rgba(255, 255, 255, 0.04);
-      --glass-border: rgba(255, 255, 255, 0.08);
-      --text: #e8ecf4;
-      --text-dim: #8b95a8;
-      --accent: #7eb8ff;
-      --accent-soft: rgba(126, 184, 255, 0.15);
-      --rain: #5b9fd4;
-      --forest: #6bcb8a;
-      --ocean: #4db8c4;
-      --fire: #e8a05c;
-      --wind: #a8b4c8;
-      --cafe: #c4a07a;
-      --night: #9b8fd4;
-      --thunder: #7a8cff;
+      --bg: #06080f;
+      --surface: rgba(255,255,255,0.035);
+      --surface-hover: rgba(255,255,255,0.06);
+      --border: rgba(255,255,255,0.07);
+      --border-strong: rgba(255,255,255,0.12);
+      --text: #f0f2f7;
+      --text-2: #9aa3b5;
+      --text-3: #6b7385;
+      --accent: #6eb6ff;
+      --accent-glow: rgba(110,182,255,0.25);
+      --radius: 18px;
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --safe-top: env(safe-area-inset-top, 0px);
     }
-
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      -webkit-tap-highlight-color: transparent;
-    }
-
+    * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
     html, body {
-      height: 100%;
-      overflow: hidden;
-      font-family: 'Outfit', system-ui, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      user-select: none;
+      height: 100%; overflow: hidden;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg); color: var(--text);
+      user-select: none; -webkit-font-smoothing: antialiased;
     }
-
-    #canvas {
-      position: fixed;
-      inset: 0;
-      z-index: 0;
-      pointer-events: none;
+    #canvas { position:fixed; inset:0; z-index:0; pointer-events:none; }
+    .orb { position:fixed; border-radius:50%; filter:blur(90px); opacity:0.4; pointer-events:none; z-index:1; }
+    .orb-a { width:60vmax; height:60vmax; background:radial-gradient(circle,#152a45 0%,transparent 68%); top:-20%; left:-15%; animation:floatA 32s ease-in-out infinite alternate; }
+    .orb-b { width:50vmax; height:50vmax; background:radial-gradient(circle,#1e1638 0%,transparent 68%); bottom:-15%; right:-10%; animation:floatB 38s ease-in-out infinite alternate; }
+    .orb-c { width:40vmax; height:40vmax; background:radial-gradient(circle,#122e28 0%,transparent 68%); top:35%; left:45%; animation:floatC 26s ease-in-out infinite alternate; }
+    @keyframes floatA { from{transform:translate(0,0) scale(1)} to{transform:translate(5%,7%) scale(1.06)} }
+    @keyframes floatB { from{transform:translate(0,0) scale(1)} to{transform:translate(-4%,-5%) scale(1.08)} }
+    @keyframes floatC { from{transform:translate(0,0)} to{transform:translate(3%,-4%)} }
+    .shell {
+      position:relative; z-index:10;
+      height:100%; height:100dvh;
+      display:flex; flex-direction:column;
+      padding: calc(12px + var(--safe-top)) 16px calc(12px + var(--safe-bottom));
+      max-width: 920px; margin: 0 auto; width: 100%;
     }
-
-    .gradient-orb {
-      position: fixed;
-      border-radius: 50%;
-      filter: blur(100px);
-      opacity: 0.35;
-      pointer-events: none;
-      z-index: 1;
-      transition: opacity 1.2s ease, transform 8s ease;
+    .top { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; flex-shrink:0; gap:12px; }
+    .brand { display:flex; flex-direction:column; gap:1px; min-width:0; }
+    .brand h1 {
+      font-family:'Instrument Serif',Georgia,serif; font-weight:400;
+      font-size:clamp(1.55rem,4.5vw,1.9rem); letter-spacing:-0.02em; line-height:1.1;
+      background:linear-gradient(135deg,#f4f7ff 0%,#9ec0e8 100%);
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
     }
-
-    .orb-1 {
-      width: 55vmax;
-      height: 55vmax;
-      background: radial-gradient(circle, #1a3a5c 0%, transparent 70%);
-      top: -15%;
-      left: -10%;
-      animation: drift 28s ease-in-out infinite alternate;
+    .brand p { font-size:0.68rem; font-weight:500; color:var(--text-3); letter-spacing:0.16em; text-transform:uppercase; }
+    .top-actions { display:flex; align-items:center; gap:8px; flex-shrink:0; }
+    .icon-btn {
+      width:42px; height:42px; border-radius:50%;
+      background:var(--surface); border:1px solid var(--border);
+      color:var(--text-2); display:flex; align-items:center; justify-content:center;
+      cursor:pointer; transition:all .2s ease;
+      backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
     }
-
-    .orb-2 {
-      width: 45vmax;
-      height: 45vmax;
-      background: radial-gradient(circle, #2a1f4a 0%, transparent 70%);
-      bottom: -10%;
-      right: -5%;
-      animation: drift 34s ease-in-out infinite alternate-reverse;
+    .icon-btn:hover, .icon-btn:active { background:var(--surface-hover); color:var(--text); border-color:var(--border-strong); }
+    .icon-btn.active { background:var(--accent-glow); border-color:rgba(110,182,255,.35); color:var(--accent); }
+    .icon-btn svg { width:18px; height:18px; stroke-width:1.6; }
+    .timer-pill {
+      font-variant-numeric:tabular-nums; font-size:0.82rem; font-weight:500;
+      color:var(--accent); min-width:3.6rem; text-align:center;
+      background:var(--accent-glow); border:1px solid rgba(110,182,255,.25);
+      border-radius:999px; padding:6px 10px; display:none;
     }
-
-    .orb-3 {
-      width: 35vmax;
-      height: 35vmax;
-      background: radial-gradient(circle, #1f3d35 0%, transparent 70%);
-      top: 40%;
-      left: 50%;
-      transform: translateX(-50%);
-      animation: drift 22s ease-in-out infinite alternate;
+    .timer-pill.show { display:block; }
+    .main { flex:1; min-height:0; overflow-y:auto; overflow-x:hidden; padding-bottom:8px; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
+    .main::-webkit-scrollbar { display:none; }
+    .presets { display:flex; gap:8px; overflow-x:auto; padding:2px 2px 14px; scrollbar-width:none; -webkit-overflow-scrolling:touch; }
+    .presets::-webkit-scrollbar { display:none; }
+    .preset {
+      flex-shrink:0; padding:8px 14px; border-radius:999px;
+      background:var(--surface); border:1px solid var(--border);
+      color:var(--text-2); font-size:0.78rem; font-weight:500;
+      cursor:pointer; transition:all .2s ease; white-space:nowrap;
+      backdrop-filter:blur(10px); font-family:inherit;
     }
-
-    @keyframes drift {
-      0% { transform: translate(0, 0) scale(1); }
-      100% { transform: translate(4%, 6%) scale(1.08); }
+    .preset:hover { background:var(--surface-hover); color:var(--text); }
+    .preset.active { background:rgba(110,182,255,.12); border-color:rgba(110,182,255,.3); color:var(--accent); }
+    .grid { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; }
+    @media (min-width:540px) { .grid { grid-template-columns:repeat(3,1fr); gap:12px; } }
+    @media (min-width:780px) { .grid { grid-template-columns:repeat(4,1fr); gap:14px; } }
+    .card {
+      position:relative; border-radius:var(--radius);
+      background:var(--surface); border:1px solid var(--border);
+      padding:16px 14px 14px;
+      display:flex; flex-direction:column; align-items:center; gap:10px;
+      cursor:pointer; transition:all .28s cubic-bezier(.22,1,.36,1);
+      backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
+      overflow:hidden; touch-action:manipulation;
     }
-
-    .app {
-      position: relative;
-      z-index: 10;
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-      padding: clamp(1.2rem, 3vw, 2.5rem);
-      max-width: 1100px;
-      margin: 0 auto;
+    .card::before { content:''; position:absolute; inset:0; border-radius:inherit; opacity:0; transition:opacity .35s ease; pointer-events:none; }
+    .card[data-id="rain"]::before { background:radial-gradient(circle at 50% -10%, rgba(91,159,212,.28), transparent 65%); }
+    .card[data-id="forest"]::before { background:radial-gradient(circle at 50% -10%, rgba(90,200,140,.24), transparent 65%); }
+    .card[data-id="ocean"]::before { background:radial-gradient(circle at 50% -10%, rgba(70,190,200,.26), transparent 65%); }
+    .card[data-id="fire"]::before { background:radial-gradient(circle at 50% -10%, rgba(232,150,80,.3), transparent 65%); }
+    .card[data-id="wind"]::before { background:radial-gradient(circle at 50% -10%, rgba(160,175,200,.2), transparent 65%); }
+    .card[data-id="cafe"]::before { background:radial-gradient(circle at 50% -10%, rgba(200,160,110,.24), transparent 65%); }
+    .card[data-id="night"]::before { background:radial-gradient(circle at 50% -10%, rgba(150,140,210,.26), transparent 65%); }
+    .card[data-id="thunder"]::before { background:radial-gradient(circle at 50% -10%, rgba(120,140,255,.26), transparent 65%); }
+    .card[data-id="stream"]::before { background:radial-gradient(circle at 50% -10%, rgba(80,180,170,.24), transparent 65%); }
+    .card[data-id="birds"]::before { background:radial-gradient(circle at 50% -10%, rgba(140,200,100,.22), transparent 65%); }
+    .card:active { transform:scale(0.97); }
+    @media (hover:hover) { .card:hover { transform:translateY(-2px); border-color:var(--border-strong); background:var(--surface-hover); } }
+    .card.on { border-color:rgba(255,255,255,.15); background:rgba(255,255,255,.07); box-shadow:0 10px 36px rgba(0,0,0,.4); }
+    .card.on::before { opacity:1; }
+    .icon { width:48px; height:48px; border-radius:14px; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,.05); transition:all .3s ease; }
+    .card.on .icon { transform:scale(1.05); }
+    .icon svg { width:24px; height:24px; stroke-width:1.5; }
+    .card[data-id="rain"] .icon { color:#5b9fd4; }
+    .card[data-id="forest"] .icon { color:#5ac88c; }
+    .card[data-id="ocean"] .icon { color:#46bec8; }
+    .card[data-id="fire"] .icon { color:#e89650; }
+    .card[data-id="wind"] .icon { color:#a0afc8; }
+    .card[data-id="cafe"] .icon { color:#c8a06e; }
+    .card[data-id="night"] .icon { color:#968cd2; }
+    .card[data-id="thunder"] .icon { color:#788cff; }
+    .card[data-id="stream"] .icon { color:#50b4aa; }
+    .card[data-id="birds"] .icon { color:#8cc864; }
+    .card.on[data-id="rain"] .icon { background:rgba(91,159,212,.18); }
+    .card.on[data-id="forest"] .icon { background:rgba(90,200,140,.16); }
+    .card.on[data-id="ocean"] .icon { background:rgba(70,190,200,.16); }
+    .card.on[data-id="fire"] .icon { background:rgba(232,150,80,.18); }
+    .card.on[data-id="wind"] .icon { background:rgba(160,175,200,.14); }
+    .card.on[data-id="cafe"] .icon { background:rgba(200,160,110,.16); }
+    .card.on[data-id="night"] .icon { background:rgba(150,140,210,.16); }
+    .card.on[data-id="thunder"] .icon { background:rgba(120,140,255,.16); }
+    .card.on[data-id="stream"] .icon { background:rgba(80,180,170,.16); }
+    .card.on[data-id="birds"] .icon { background:rgba(140,200,100,.14); }
+    .label { font-size:0.84rem; font-weight:500; letter-spacing:0.01em; }
+    .vol { width:100%; opacity:0; pointer-events:none; height:0; overflow:hidden; transition:opacity .25s ease, height .25s ease, margin .25s ease; }
+    .card.on .vol { opacity:1; pointer-events:auto; height:18px; margin-top:2px; }
+    input[type=range] { -webkit-appearance:none; appearance:none; width:100%; height:4px; border-radius:4px; background:rgba(255,255,255,.12); outline:none; cursor:pointer; }
+    input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:16px; height:16px; border-radius:50%; background:#fff; box-shadow:0 0 0 3px rgba(255,255,255,.15), 0 2px 8px rgba(0,0,0,.35); cursor:pointer; transition:transform .15s; }
+    input[type=range]::-webkit-slider-thumb:active { transform:scale(1.15); }
+    input[type=range]::-moz-range-thumb { width:16px; height:16px; border:none; border-radius:50%; background:#fff; box-shadow:0 0 0 3px rgba(255,255,255,.15); cursor:pointer; }
+    .bottom {
+      flex-shrink:0; margin-top:12px;
+      background:rgba(12,16,28,.72); border:1px solid var(--border);
+      border-radius:22px; padding:12px 14px;
+      backdrop-filter:blur(24px) saturate(1.2); -webkit-backdrop-filter:blur(24px) saturate(1.2);
+      display:flex; flex-direction:column; gap:10px;
     }
-
-    header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: clamp(1.5rem, 4vw, 2.5rem);
-      flex-shrink: 0;
+    .row { display:flex; align-items:center; gap:12px; }
+    .master { display:flex; align-items:center; gap:10px; flex:1; min-width:0; }
+    .master svg { width:18px; height:18px; color:var(--text-3); flex-shrink:0; }
+    .master input { flex:1; }
+    .status { font-size:0.75rem; color:var(--text-3); white-space:nowrap; }
+    .status b { color:var(--text-2); font-weight:500; }
+    .actions { display:flex; gap:8px; flex-wrap:wrap; }
+    .pill {
+      height:36px; padding:0 14px; border-radius:999px;
+      background:var(--surface); border:1px solid var(--border);
+      color:var(--text-2); font-size:0.78rem; font-weight:500;
+      display:inline-flex; align-items:center; gap:6px;
+      cursor:pointer; transition:all .2s ease; font-family:inherit;
     }
-
-    .logo {
-      display: flex;
-      flex-direction: column;
-      gap: 0.15rem;
+    .pill:hover, .pill:active { background:var(--surface-hover); color:var(--text); border-color:var(--border-strong); }
+    .pill.active { background:var(--accent-glow); border-color:rgba(110,182,255,.35); color:var(--accent); }
+    .pill svg { width:15px; height:15px; }
+    .sheet { display:none; gap:8px; flex-wrap:wrap; padding-top:2px; }
+    .sheet.open { display:flex; }
+    .chip {
+      height:34px; padding:0 12px; border-radius:999px;
+      background:rgba(255,255,255,.04); border:1px solid var(--border);
+      color:var(--text-3); font-size:0.76rem; font-weight:500;
+      cursor:pointer; transition:all .2s; font-family:inherit;
     }
-
-    .logo h1 {
-      font-family: 'Instrument Serif', Georgia, serif;
-      font-weight: 400;
-      font-size: clamp(1.8rem, 4vw, 2.4rem);
-      letter-spacing: -0.02em;
-      background: linear-gradient(135deg, #f0f4ff 0%, #a8c4e8 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    .logo span {
-      font-size: 0.75rem;
-      font-weight: 400;
-      color: var(--text-dim);
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-    }
-
-    .header-controls {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-    }
-
-    .btn {
-      background: var(--glass);
-      border: 1px solid var(--glass-border);
-      color: var(--text);
-      border-radius: 999px;
-      padding: 0.55rem 1.1rem;
-      font-family: inherit;
-      font-size: 0.85rem;
-      font-weight: 500;
-      cursor: pointer;
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      transition: all 0.25s ease;
-      display: flex;
-      align-items: center;
-      gap: 0.45rem;
-    }
-
-    .btn:hover {
-      background: rgba(255, 255, 255, 0.08);
-      border-color: rgba(255, 255, 255, 0.14);
-    }
-
-    .btn.active {
-      background: var(--accent-soft);
-      border-color: rgba(126, 184, 255, 0.35);
-      color: var(--accent);
-    }
-
-    .btn-icon {
-      width: 42px;
-      height: 42px;
-      padding: 0;
-      justify-content: center;
-      border-radius: 50%;
-    }
-
-    .timer-display {
-      font-variant-numeric: tabular-nums;
-      font-size: 0.9rem;
-      color: var(--text-dim);
-      min-width: 4.5rem;
-      text-align: center;
-    }
-
-    main {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 1.25rem;
-      min-height: 0;
-      overflow: hidden;
-    }
-
-    .sounds {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-      gap: 0.9rem;
-      overflow-y: auto;
-      padding-bottom: 0.5rem;
-      scrollbar-width: thin;
-      scrollbar-color: rgba(255,255,255,0.1) transparent;
-    }
-
-    .sounds::-webkit-scrollbar { width: 4px; }
-    .sounds::-webkit-scrollbar-thumb {
-      background: rgba(255,255,255,0.12);
-      border-radius: 4px;
-    }
-
-    .sound-card {
-      position: relative;
-      background: var(--glass);
-      border: 1px solid var(--glass-border);
-      border-radius: 20px;
-      padding: 1.15rem 1rem 1rem;
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      cursor: pointer;
-      transition: all 0.35s cubic-bezier(0.22, 1, 0.36, 1);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.85rem;
-      overflow: hidden;
-    }
-
-    .sound-card::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      border-radius: 20px;
-      opacity: 0;
-      transition: opacity 0.4s ease;
-      pointer-events: none;
-    }
-
-    .sound-card[data-sound="rain"]::before { background: radial-gradient(circle at 50% 0%, rgba(91, 159, 212, 0.25), transparent 70%); }
-    .sound-card[data-sound="forest"]::before { background: radial-gradient(circle at 50% 0%, rgba(107, 203, 138, 0.22), transparent 70%); }
-    .sound-card[data-sound="ocean"]::before { background: radial-gradient(circle at 50% 0%, rgba(77, 184, 196, 0.25), transparent 70%); }
-    .sound-card[data-sound="fire"]::before { background: radial-gradient(circle at 50% 0%, rgba(232, 160, 92, 0.28), transparent 70%); }
-    .sound-card[data-sound="wind"]::before { background: radial-gradient(circle at 50% 0%, rgba(168, 180, 200, 0.2), transparent 70%); }
-    .sound-card[data-sound="cafe"]::before { background: radial-gradient(circle at 50% 0%, rgba(196, 160, 122, 0.22), transparent 70%); }
-    .sound-card[data-sound="night"]::before { background: radial-gradient(circle at 50% 0%, rgba(155, 143, 212, 0.25), transparent 70%); }
-    .sound-card[data-sound="thunder"]::before { background: radial-gradient(circle at 50% 0%, rgba(122, 140, 255, 0.25), transparent 70%); }
-
-    .sound-card:hover {
-      transform: translateY(-3px);
-      border-color: rgba(255, 255, 255, 0.14);
-      background: rgba(255, 255, 255, 0.06);
-    }
-
-    .sound-card.active {
-      border-color: rgba(255, 255, 255, 0.18);
-      background: rgba(255, 255, 255, 0.07);
-      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
-    }
-
-    .sound-card.active::before { opacity: 1; }
-
-    .icon-wrap {
-      width: 52px;
-      height: 52px;
-      border-radius: 16px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: rgba(255, 255, 255, 0.05);
-      transition: all 0.35s ease;
-    }
-
-    .sound-card.active .icon-wrap { transform: scale(1.06); }
-
-    .sound-card[data-sound="rain"] .icon-wrap { color: var(--rain); }
-    .sound-card[data-sound="forest"] .icon-wrap { color: var(--forest); }
-    .sound-card[data-sound="ocean"] .icon-wrap { color: var(--ocean); }
-    .sound-card[data-sound="fire"] .icon-wrap { color: var(--fire); }
-    .sound-card[data-sound="wind"] .icon-wrap { color: var(--wind); }
-    .sound-card[data-sound="cafe"] .icon-wrap { color: var(--cafe); }
-    .sound-card[data-sound="night"] .icon-wrap { color: var(--night); }
-    .sound-card[data-sound="thunder"] .icon-wrap { color: var(--thunder); }
-
-    .sound-card.active[data-sound="rain"] .icon-wrap { background: rgba(91, 159, 212, 0.18); }
-    .sound-card.active[data-sound="forest"] .icon-wrap { background: rgba(107, 203, 138, 0.18); }
-    .sound-card.active[data-sound="ocean"] .icon-wrap { background: rgba(77, 184, 196, 0.18); }
-    .sound-card.active[data-sound="fire"] .icon-wrap { background: rgba(232, 160, 92, 0.2); }
-    .sound-card.active[data-sound="wind"] .icon-wrap { background: rgba(168, 180, 200, 0.15); }
-    .sound-card.active[data-sound="cafe"] .icon-wrap { background: rgba(196, 160, 122, 0.18); }
-    .sound-card.active[data-sound="night"] .icon-wrap { background: rgba(155, 143, 212, 0.18); }
-    .sound-card.active[data-sound="thunder"] .icon-wrap { background: rgba(122, 140, 255, 0.18); }
-
-    .icon-wrap svg {
-      width: 26px;
-      height: 26px;
-      stroke-width: 1.5;
-    }
-
-    .sound-name {
-      font-size: 0.9rem;
-      font-weight: 500;
-      letter-spacing: 0.01em;
-    }
-
-    .volume-wrap {
-      width: 100%;
-      padding: 0 0.15rem;
-      opacity: 0.35;
-      pointer-events: none;
-      transition: opacity 0.3s ease;
-    }
-
-    .sound-card.active .volume-wrap {
-      opacity: 1;
-      pointer-events: auto;
-    }
-
-    input[type="range"] {
-      -webkit-appearance: none;
-      appearance: none;
-      width: 100%;
-      height: 4px;
-      border-radius: 4px;
-      background: rgba(255, 255, 255, 0.12);
-      outline: none;
-      cursor: pointer;
-    }
-
-    input[type="range"]::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      appearance: none;
-      width: 14px;
-      height: 14px;
-      border-radius: 50%;
-      background: #fff;
-      box-shadow: 0 0 10px rgba(255, 255, 255, 0.35);
-      cursor: pointer;
-      transition: transform 0.15s ease;
-    }
-
-    input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.15); }
-
-    input[type="range"]::-moz-range-thumb {
-      width: 14px;
-      height: 14px;
-      border: none;
-      border-radius: 50%;
-      background: #fff;
-      box-shadow: 0 0 10px rgba(255, 255, 255, 0.35);
-      cursor: pointer;
-    }
-
-    .bottom-bar {
-      flex-shrink: 0;
-      margin-top: 1rem;
-      background: var(--bg-elevated);
-      border: 1px solid var(--glass-border);
-      border-radius: 24px;
-      padding: 1rem 1.25rem;
-      backdrop-filter: blur(24px);
-      -webkit-backdrop-filter: blur(24px);
-      display: flex;
-      align-items: center;
-      gap: 1.25rem;
-      flex-wrap: wrap;
-    }
-
-    .master-volume {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      flex: 1;
-      min-width: 160px;
-    }
-
-    .master-volume svg {
-      width: 20px;
-      height: 20px;
-      color: var(--text-dim);
-      flex-shrink: 0;
-    }
-
-    .master-volume input { flex: 1; }
-
-    .status {
-      font-size: 0.8rem;
-      color: var(--text-dim);
-      letter-spacing: 0.04em;
-    }
-
-    .status strong {
-      color: var(--text);
-      font-weight: 500;
-    }
-
-    .timer-panel {
-      display: none;
-      gap: 0.5rem;
-      flex-wrap: wrap;
-    }
-
-    .timer-panel.visible { display: flex; }
-
-    .timer-chip {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid var(--glass-border);
-      border-radius: 999px;
-      padding: 0.4rem 0.9rem;
-      font-size: 0.8rem;
-      color: var(--text-dim);
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-
-    .timer-chip:hover,
-    .timer-chip.active {
-      background: var(--accent-soft);
-      border-color: rgba(126, 184, 255, 0.3);
-      color: var(--accent);
-    }
-
+    .chip:hover, .chip.active { background:var(--accent-glow); border-color:rgba(110,182,255,.3); color:var(--accent); }
     .intro {
-      position: fixed;
-      inset: 0;
-      z-index: 100;
-      background: var(--bg);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 1.5rem;
-      transition: opacity 0.8s ease, visibility 0.8s ease;
+      position:fixed; inset:0; z-index:100; background:var(--bg);
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      gap:18px; padding:24px; transition:opacity .7s ease, visibility .7s;
     }
-
-    .intro.hidden {
-      opacity: 0;
-      visibility: hidden;
-      pointer-events: none;
-    }
-
+    .intro.hide { opacity:0; visibility:hidden; pointer-events:none; }
     .intro h2 {
-      font-family: 'Instrument Serif', Georgia, serif;
-      font-weight: 400;
-      font-size: clamp(2rem, 6vw, 3.2rem);
-      letter-spacing: -0.02em;
-      text-align: center;
-      background: linear-gradient(135deg, #f0f4ff 20%, #8ab4e0 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+      font-family:'Instrument Serif',Georgia,serif; font-weight:400;
+      font-size:clamp(2.2rem,7vw,3.4rem); letter-spacing:-0.02em; text-align:center;
+      background:linear-gradient(135deg,#f4f7ff 15%,#8ab4e0 100%);
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
     }
-
-    .intro p {
-      color: var(--text-dim);
-      font-size: 1rem;
-      max-width: 320px;
-      text-align: center;
-      line-height: 1.5;
+    .intro p { color:var(--text-2); font-size:0.95rem; text-align:center; max-width:300px; line-height:1.55; }
+    .enter {
+      margin-top:8px; height:48px; padding:0 28px; border-radius:999px;
+      background:linear-gradient(135deg,#3a6ea5,#5a9fd4);
+      border:none; color:#fff; font-size:0.95rem; font-weight:600;
+      cursor:pointer; font-family:inherit; letter-spacing:0.01em;
+      box-shadow:0 8px 28px rgba(90,159,212,.35);
+      transition:transform .2s, box-shadow .2s;
     }
-
-    .intro .btn {
-      margin-top: 0.5rem;
-      padding: 0.75rem 1.8rem;
-      font-size: 0.95rem;
+    .enter:hover { transform:translateY(-1px); box-shadow:0 12px 32px rgba(90,159,212,.45); }
+    .enter:active { transform:scale(0.98); }
+    .toast {
+      position:fixed; bottom:calc(100px + var(--safe-bottom)); left:50%; transform:translateX(-50%) translateY(20px);
+      background:rgba(20,26,40,.92); border:1px solid var(--border-strong);
+      color:var(--text); font-size:0.82rem; font-weight:500;
+      padding:10px 18px; border-radius:999px; opacity:0; pointer-events:none;
+      transition:all .3s ease; z-index:50; backdrop-filter:blur(12px); white-space:nowrap;
     }
-
-    @media (max-width: 600px) {
-      .sounds { grid-template-columns: repeat(2, 1fr); }
-      .bottom-bar {
-        flex-direction: column;
-        align-items: stretch;
-      }
-      .master-volume { min-width: 100%; }
-    }
-
-    @keyframes soft-pulse {
-      0%, 100% { opacity: 0.9; }
-      50% { opacity: 1; }
-    }
-    .sound-card.active .icon-wrap {
-      animation: soft-pulse 3s ease-in-out infinite;
-    }
+    .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
   </style>
 </head>
 <body>
   <canvas id="canvas"></canvas>
-  <div class="gradient-orb orb-1"></div>
-  <div class="gradient-orb orb-2"></div>
-  <div class="gradient-orb orb-3"></div>
+  <div class="orb orb-a"></div>
+  <div class="orb orb-b"></div>
+  <div class="orb orb-c"></div>
 
   <div class="intro" id="intro">
     <h2>Lumen</h2>
-    <p>Schaffe deinen eigenen Klangraum.<br>Mixe Ambient-Sounds für Fokus, Ruhe oder Schlaf.</p>
-    <button class="btn" id="startBtn">Eintreten</button>
+    <p>Dein persönlicher Klangraum.<br>Mixe Ambient-Sounds für Fokus, Ruhe & Schlaf.</p>
+    <button class="enter" id="start">Eintreten</button>
   </div>
 
-  <div class="app">
-    <header>
-      <div class="logo">
+  <div class="shell">
+    <header class="top">
+      <div class="brand">
         <h1>Lumen</h1>
-        <span>Ambient Space</span>
+        <p>Ambient</p>
       </div>
-      <div class="header-controls">
-        <span class="timer-display" id="timerDisplay"></span>
-        <button class="btn btn-icon" id="timerBtn" title="Timer">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20">
-            <circle cx="12" cy="12" r="9"/>
-            <path d="M12 7v5l3 2"/>
-          </svg>
+      <div class="top-actions">
+        <div class="timer-pill" id="timerPill"></div>
+        <button class="icon-btn" id="btnTimer" title="Timer" aria-label="Timer">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>
         </button>
-        <button class="btn btn-icon" id="stopAllBtn" title="Alles stoppen">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="18" height="18">
-            <rect x="6" y="6" width="12" height="12" rx="1.5"/>
-          </svg>
+        <button class="icon-btn" id="btnStop" title="Alles stoppen" aria-label="Stop">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
         </button>
       </div>
     </header>
 
-    <main>
-      <div class="sounds" id="sounds"></div>
-    </main>
+    <div class="main">
+      <div class="presets" id="presets"></div>
+      <div class="grid" id="grid"></div>
+    </div>
 
-    <div class="bottom-bar">
-      <div class="master-volume">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-          <path d="M11 5L6 9H2v6h4l5 4V5z"/>
-          <path d="M15.54 8.46a5 5 0 010 7.07"/>
-          <path d="M19.07 4.93a10 10 0 010 14.14"/>
-        </svg>
-        <input type="range" id="masterVolume" min="0" max="1" step="0.01" value="0.7" />
+    <div class="bottom">
+      <div class="row">
+        <div class="master">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 010 7.07M19.07 4.93a10 10 0 010 14.14"/></svg>
+          <input type="range" id="master" min="0" max="1" step="0.01" value="0.75" />
+        </div>
+        <div class="status" id="status">Bereit</div>
       </div>
-      <div class="status" id="status">Tippe auf Sounds, um sie zu mischen</div>
-      <div class="timer-panel" id="timerPanel">
-        <button class="timer-chip" data-min="15">15 min</button>
-        <button class="timer-chip" data-min="30">30 min</button>
-        <button class="timer-chip" data-min="45">45 min</button>
-        <button class="timer-chip" data-min="60">60 min</button>
-        <button class="timer-chip" data-min="0">Aus</button>
+      <div class="actions">
+        <button class="pill" id="btnMute">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M11 5L6 9H2v6h4l5 4V5z"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+          Stumm
+        </button>
+        <button class="pill" id="btnFade">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3v18M5 12h14"/></svg>
+          Ausblenden
+        </button>
+      </div>
+      <div class="sheet" id="timerSheet">
+        <button class="chip" data-m="5">5 min</button>
+        <button class="chip" data-m="15">15 min</button>
+        <button class="chip" data-m="30">30 min</button>
+        <button class="chip" data-m="45">45 min</button>
+        <button class="chip" data-m="60">60 min</button>
+        <button class="chip" data-m="90">90 min</button>
+        <button class="chip" data-m="0">Aus</button>
       </div>
     </div>
   </div>
 
+  <div class="toast" id="toast"></div>
+
   <script>
     const SOUNDS = [
-      { id: 'rain', name: 'Regen' },
-      { id: 'forest', name: 'Wald' },
-      { id: 'ocean', name: 'Ozean' },
-      { id: 'fire', name: 'Feuer' },
-      { id: 'wind', name: 'Wind' },
-      { id: 'cafe', name: 'Café' },
-      { id: 'night', name: 'Nacht' },
-      { id: 'thunder', name: 'Gewitter' }
+      { id:'rain', name:'Regen' },
+      { id:'forest', name:'Wald' },
+      { id:'ocean', name:'Ozean' },
+      { id:'fire', name:'Feuer' },
+      { id:'wind', name:'Wind' },
+      { id:'stream', name:'Bach' },
+      { id:'cafe', name:'Café' },
+      { id:'night', name:'Nacht' },
+      { id:'thunder', name:'Gewitter' },
+      { id:'birds', name:'Vögel' }
+    ];
+
+    const PRESETS = [
+      { name:'Regen & Fokus', map:{ rain:0.7, cafe:0.25, wind:0.15 } },
+      { name:'Waldspaziergang', map:{ forest:0.65, birds:0.45, stream:0.35, wind:0.2 } },
+      { name:'Meerblick', map:{ ocean:0.75, wind:0.3, birds:0.15 } },
+      { name:'Kaminabend', map:{ fire:0.7, rain:0.35, night:0.2 } },
+      { name:'Gewitter', map:{ thunder:0.6, rain:0.7, wind:0.4 } },
+      { name:'Nacht', map:{ night:0.55, wind:0.2, stream:0.15 } },
+      { name:'Café', map:{ cafe:0.55, rain:0.25 } },
+      { name:'Alles aus', map:{} }
     ];
 
     const ICONS = {
-      rain: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 3v2M8 5v1M16 5v1"/><path d="M7 14a5 5 0 0110 0c0 3-2.5 5-5 7-2.5-2-5-4-5-7z"/><path d="M9 18l-1 2M12 19l-1 2M15 18l-1 2"/></svg>`,
-      forest: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 22V10"/><path d="M12 10c-3-4-6-5-6-5s1 4 3 6"/><path d="M12 10c3-4 6-5 6-5s-1 4-3 6"/><path d="M9 14c-2-2-4-2.5-4-2.5s.8 2.2 2 3.5"/><path d="M15 14c2-2 4-2.5 4-2.5s-.8 2.2-2 3.5"/></svg>`,
-      ocean: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 15c2 0 2-2 4-2s2 2 4 2 2-2 4-2 2 2 4 2"/><path d="M3 19c2 0 2-2 4-2s2 2 4 2 2-2 4-2 2 2 4 2"/><path d="M3 11c2 0 2-2 4-2s2 2 4 2 2-2 4-2 2 2 4 2"/></svg>`,
-      fire: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 22c4-2 6-5.5 6-9 0-4-3-7-6-10-3 3-6 6-6 10 0 3.5 2 7 6 9z"/><path d="M12 22c-1.5-1.5-2.5-3.5-2.5-5.5 0-2 1-3.5 2.5-5 1.5 1.5 2.5 3 2.5 5 0 2-1 4-2.5 5.5z"/></svg>`,
-      wind: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 8h10a3 3 0 100-6"/><path d="M3 12h14a3 3 0 110 6"/><path d="M3 16h8a3 3 0 110 6"/></svg>`,
-      cafe: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 8h1a4 4 0 010 8h-1"/><path d="M3 8h14v9a4 4 0 01-4 4H7a4 4 0 01-4-4V8z"/><path d="M6 2v2M10 2v2M14 2v2"/></svg>`,
-      night: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 14.5A8.5 8.5 0 1111.5 3a6.5 6.5 0 009.5 11.5z"/><circle cx="8" cy="9" r="0.6" fill="currentColor"/><circle cx="11" cy="7" r="0.5" fill="currentColor"/><circle cx="9.5" cy="12" r="0.5" fill="currentColor"/></svg>`,
-      thunder: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z"/></svg>`
+      rain:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 3v1.5M8.5 5v1M15.5 5v1"/><path d="M7 13.5a5 5 0 0110 0c0 2.8-2.5 4.8-5 6.8-2.5-2-5-4-5-6.8z"/><path d="M9.5 17.5l-.8 1.8M12 18.5l-.7 1.6M14.5 17.5l-.8 1.8"/></svg>`,
+      forest:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 21V11"/><path d="M12 11C9 7 6 5.5 6 5.5s1.2 3.5 3 5.5"/><path d="M12 11c3-4 6-5.5 6-5.5s-1.2 3.5-3 5.5"/><path d="M9.5 14c-1.8-1.6-3.5-2-3.5-2s.7 1.8 1.8 3"/><path d="M14.5 14c1.8-1.6 3.5-2 3.5-2s-.7 1.8-1.8 3"/></svg>`,
+      ocean:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 14.5c1.8 0 1.8-1.8 3.6-1.8s1.8 1.8 3.6 1.8 1.8-1.8 3.6-1.8 1.8 1.8 3.6 1.8"/><path d="M3 18c1.8 0 1.8-1.8 3.6-1.8s1.8 1.8 3.6 1.8 1.8-1.8 3.6-1.8 1.8 1.8 3.6 1.8"/><path d="M3 11c1.8 0 1.8-1.8 3.6-1.8s1.8 1.8 3.6 1.8 1.8-1.8 3.6-1.8 1.8 1.8 3.6 1.8"/></svg>`,
+      fire:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 21c3.5-1.8 5.5-5 5.5-8.2 0-3.6-2.7-6.4-5.5-9.3-2.8 2.9-5.5 5.7-5.5 9.3 0 3.2 2 6.4 5.5 8.2z"/><path d="M12 21c-1.3-1.3-2.2-3.1-2.2-5 0-1.8.9-3.1 2.2-4.5 1.3 1.4 2.2 2.7 2.2 4.5 0 1.9-.9 3.7-2.2 5z"/></svg>`,
+      wind:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 8h9.5a2.5 2.5 0 100-5"/><path d="M3 12h13a2.5 2.5 0 110 5"/><path d="M3 16h7.5a2.5 2.5 0 110 5"/></svg>`,
+      cafe:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 8h1.2a3.5 3.5 0 010 7H17"/><path d="M3 8h14v8.5A3.5 3.5 0 0113.5 20h-7A3.5 3.5 0 013 16.5V8z"/><path d="M6.5 3v2M10 3v2M13.5 3v2"/></svg>`,
+      night:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20.5 14A7.5 7.5 0 0111 3.5 6 6 0 0020.5 14z"/><circle cx="8.2" cy="9" r="0.55" fill="currentColor"/><circle cx="10.8" cy="7.2" r="0.45" fill="currentColor"/><circle cx="9.5" cy="12" r="0.45" fill="currentColor"/></svg>`,
+      thunder:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M13 2L5 13.5h6.5L10.5 22 19 10.5h-6.5L13 2z"/></svg>`,
+      stream:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 8c2 0 2-2 4-2s2 2 4 2 2-2 4-2 2 2 4 2"/><path d="M4 12c2 0 2-2 4-2s2 2 4 2 2-2 4-2 2 2 4 2"/><path d="M4 16c2 0 2-2 4-2s2 2 4 2 2-2 4-2 2 2 4 2"/></svg>`,
+      birds:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M8 14c-2-1-3.5-3-3.5-5.5C4.5 5.5 7 3 10 3c2 0 3.5 1 4.5 2.5"/><path d="M14 10c1.5-1 3-1.5 4.5-1 1.2.4 2 1.5 2 2.8 0 2-1.5 3.2-3.5 3.2h-3"/><path d="M12 12v8"/><path d="M9 16h6"/></svg>`
     };
 
-    let audioCtx = null;
-    let masterGain = null;
+    let ctx = null, master = null, masterVol = 0.75, muted = false;
     const players = {};
-    let masterVol = 0.7;
-    let timerEnd = null;
-    let timerInterval = null;
+    let timerEnd = null, timerIv = null, activePreset = -1;
 
     function initAudio() {
-      if (audioCtx) return;
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      masterGain = audioCtx.createGain();
-      masterGain.gain.value = masterVol;
-      masterGain.connect(audioCtx.destination);
+      if (ctx) return;
+      ctx = new (window.AudioContext || window.webkitAudioContext)();
+      master = ctx.createGain();
+      master.gain.value = masterVol;
+      master.connect(ctx.destination);
     }
 
-    function createPlayer(sound) {
-      const gain = audioCtx.createGain();
-      gain.gain.value = 0;
-      gain.connect(masterGain);
-
-      const player = {
-        gain,
-        active: false,
-        volume: 0.65,
-        nodes: null
-      };
-
-      player.nodes = createProceduralSound(sound.id, gain);
-      players[sound.id] = player;
-      return player;
+    function noiseBuf(sec, scale) {
+      const n = Math.floor(sec * ctx.sampleRate);
+      const b = ctx.createBuffer(1, n, ctx.sampleRate);
+      const d = b.getChannelData(0);
+      for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * scale;
+      return b;
     }
 
-    function createProceduralSound(id, destination) {
+    function createSound(id, dest) {
       const nodes = {};
+      const g = ctx.createGain();
+      g.gain.value = 1;
+      g.connect(dest);
 
       if (id === 'rain') {
-        const bufferSize = 2 * audioCtx.sampleRate;
-        const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-        const data = buffer.getChannelData(0);
-        for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
-        const noise = audioCtx.createBufferSource();
-        noise.buffer = buffer;
-        noise.loop = true;
-        const filter = audioCtx.createBiquadFilter();
-        filter.type = 'bandpass';
-        filter.frequency.value = 1100;
-        filter.Q.value = 0.45;
-        const high = audioCtx.createBiquadFilter();
-        high.type = 'highpass';
-        high.frequency.value = 400;
-        const gain = audioCtx.createGain();
-        gain.gain.value = 0.32;
-        noise.connect(high);
-        high.connect(filter);
-        filter.connect(gain);
-        gain.connect(destination);
-        noise.start();
-        nodes.source = noise;
-      }
-
-      else if (id === 'wind') {
-        const bufferSize = 2 * audioCtx.sampleRate;
-        const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-        const data = buffer.getChannelData(0);
-        for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
-        const noise = audioCtx.createBufferSource();
-        noise.buffer = buffer;
-        noise.loop = true;
-        const filter = audioCtx.createBiquadFilter();
-        filter.type = 'lowpass';
-        filter.frequency.value = 400;
-        filter.Q.value = 0.7;
-        const lfo = audioCtx.createOscillator();
-        lfo.type = 'sine';
-        lfo.frequency.value = 0.08;
-        const lfoGain = audioCtx.createGain();
-        lfoGain.gain.value = 180;
-        lfo.connect(lfoGain);
-        lfoGain.connect(filter.frequency);
-        lfo.start();
-        const gain = audioCtx.createGain();
-        gain.gain.value = 0.28;
-        noise.connect(filter);
-        filter.connect(gain);
-        gain.connect(destination);
-        noise.start();
-        nodes.source = noise;
-        nodes.lfo = lfo;
-      }
-
-      else if (id === 'ocean') {
-        const bufferSize = 3 * audioCtx.sampleRate;
-        const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-        const data = buffer.getChannelData(0);
-        for (let i = 0; i < bufferSize; i++) data[i] = (Math.random() * 2 - 1) * 0.7;
-        const noise = audioCtx.createBufferSource();
-        noise.buffer = buffer;
-        noise.loop = true;
-        const filter = audioCtx.createBiquadFilter();
-        filter.type = 'lowpass';
-        filter.frequency.value = 280;
-        const lfo = audioCtx.createOscillator();
-        lfo.frequency.value = 0.07;
-        const lfoGain = audioCtx.createGain();
-        lfoGain.gain.value = 120;
-        lfo.connect(lfoGain);
-        lfoGain.connect(filter.frequency);
-        lfo.start();
-        const gain = audioCtx.createGain();
-        gain.gain.value = 0.4;
-        noise.connect(filter);
-        filter.connect(gain);
-        gain.connect(destination);
-        noise.start();
-        nodes.source = noise;
-        nodes.lfo = lfo;
-      }
-
-      else if (id === 'fire') {
-        const bufferSize = audioCtx.sampleRate * 2;
-        const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-        const data = buffer.getChannelData(0);
-        for (let i = 0; i < bufferSize; i++) {
-          data[i] = Math.random() > 0.995 ? (Math.random() * 2 - 1) * 0.9 : (Math.random() * 2 - 1) * 0.15;
-        }
-        const noise = audioCtx.createBufferSource();
-        noise.buffer = buffer;
-        noise.loop = true;
-        const filter = audioCtx.createBiquadFilter();
-        filter.type = 'bandpass';
-        filter.frequency.value = 800;
-        filter.Q.value = 1.2;
-        const low = audioCtx.createBiquadFilter();
-        low.type = 'lowpass';
-        low.frequency.value = 200;
-        const gain = audioCtx.createGain();
-        gain.gain.value = 0.32;
-        noise.connect(filter);
-        filter.connect(gain);
-        noise.connect(low);
-        low.connect(gain);
-        gain.connect(destination);
-        noise.start();
-        nodes.source = noise;
-      }
-
-      else if (id === 'forest') {
-        const bufferSize = 2 * audioCtx.sampleRate;
-        const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-        const data = buffer.getChannelData(0);
-        for (let i = 0; i < bufferSize; i++) data[i] = (Math.random() * 2 - 1) * 0.4;
-        const noise = audioCtx.createBufferSource();
-        noise.buffer = buffer;
-        noise.loop = true;
-        const filter = audioCtx.createBiquadFilter();
-        filter.type = 'highpass';
-        filter.frequency.value = 1200;
-        filter.Q.value = 0.5;
-        const gain = audioCtx.createGain();
-        gain.gain.value = 0.18;
-        noise.connect(filter);
-        filter.connect(gain);
-        gain.connect(destination);
-        noise.start();
-        nodes.source = noise;
-
+        const src = ctx.createBufferSource();
+        src.buffer = noiseBuf(2.5, 1); src.loop = true;
+        const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 350;
+        const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 1200; bp.Q.value = 0.4;
+        const g2 = ctx.createGain(); g2.gain.value = 0.38;
+        src.connect(hp); hp.connect(bp); bp.connect(g2); g2.connect(g);
+        src.start(); nodes.src = src;
+      } else if (id === 'wind') {
+        const src = ctx.createBufferSource();
+        src.buffer = noiseBuf(3, 1); src.loop = true;
+        const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 380; lp.Q.value = 0.6;
+        const lfo = ctx.createOscillator(); lfo.frequency.value = 0.07;
+        const lg = ctx.createGain(); lg.gain.value = 160;
+        lfo.connect(lg); lg.connect(lp.frequency); lfo.start();
+        const g2 = ctx.createGain(); g2.gain.value = 0.3;
+        src.connect(lp); lp.connect(g2); g2.connect(g);
+        src.start(); nodes.src = src; nodes.lfo = lfo;
+      } else if (id === 'ocean') {
+        const src = ctx.createBufferSource();
+        src.buffer = noiseBuf(4, 0.75); src.loop = true;
+        const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 260;
+        const lfo = ctx.createOscillator(); lfo.frequency.value = 0.055;
+        const lg = ctx.createGain(); lg.gain.value = 110;
+        lfo.connect(lg); lg.connect(lp.frequency); lfo.start();
+        const g2 = ctx.createGain(); g2.gain.value = 0.42;
+        src.connect(lp); lp.connect(g2); g2.connect(g);
+        src.start(); nodes.src = src; nodes.lfo = lfo;
+      } else if (id === 'fire') {
+        const src = ctx.createBufferSource();
+        const b = noiseBuf(2, 1);
+        const d = b.getChannelData(0);
+        for (let i = 0; i < d.length; i++) d[i] = Math.random() > 0.993 ? (Math.random()*2-1)*0.95 : (Math.random()*2-1)*0.12;
+        src.buffer = b; src.loop = true;
+        const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 750; bp.Q.value = 1.1;
+        const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 180;
+        const g2 = ctx.createGain(); g2.gain.value = 0.34;
+        src.connect(bp); bp.connect(g2); src.connect(lp); lp.connect(g2); g2.connect(g);
+        src.start(); nodes.src = src;
+      } else if (id === 'forest') {
+        const src = ctx.createBufferSource();
+        src.buffer = noiseBuf(2.5, 0.45); src.loop = true;
+        const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 900; hp.Q.value = 0.5;
+        const g2 = ctx.createGain(); g2.gain.value = 0.2;
+        src.connect(hp); hp.connect(g2); g2.connect(g);
+        src.start(); nodes.src = src;
         const chirp = () => {
-          if (!players.forest?.active) return;
-          const osc = audioCtx.createOscillator();
-          const g = audioCtx.createGain();
-          osc.frequency.value = 1800 + Math.random() * 1200;
-          g.gain.value = 0;
-          osc.connect(g);
-          g.connect(destination);
-          const now = audioCtx.currentTime;
-          g.gain.linearRampToValueAtTime(0.03, now + 0.02);
-          g.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
-          osc.start(now);
-          osc.stop(now + 0.2);
-          setTimeout(chirp, 800 + Math.random() * 4000);
+          if (!players.forest?.on) return;
+          const o = ctx.createOscillator(); const gg = ctx.createGain();
+          o.frequency.value = 1600 + Math.random()*1400; gg.gain.value = 0;
+          o.connect(gg); gg.connect(g);
+          const t = ctx.currentTime;
+          gg.gain.linearRampToValueAtTime(0.028, t+0.02);
+          gg.gain.exponentialRampToValueAtTime(0.001, t+0.16);
+          o.start(t); o.stop(t+0.18);
+          setTimeout(chirp, 700 + Math.random()*3500);
         };
-        setTimeout(chirp, 1500);
-      }
-
-      else if (id === 'cafe') {
-        const bufferSize = 2 * audioCtx.sampleRate;
-        const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-        const data = buffer.getChannelData(0);
-        for (let i = 0; i < bufferSize; i++) data[i] = (Math.random() * 2 - 1) * 0.25;
-        const noise = audioCtx.createBufferSource();
-        noise.buffer = buffer;
-        noise.loop = true;
-        const filter = audioCtx.createBiquadFilter();
-        filter.type = 'lowpass';
-        filter.frequency.value = 900;
-        const gain = audioCtx.createGain();
-        gain.gain.value = 0.22;
-        noise.connect(filter);
-        filter.connect(gain);
-        gain.connect(destination);
-        noise.start();
-        nodes.source = noise;
-      }
-
-      else if (id === 'night') {
-        const bufferSize = 2 * audioCtx.sampleRate;
-        const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-        const data = buffer.getChannelData(0);
-        for (let i = 0; i < bufferSize; i++) data[i] = (Math.random() * 2 - 1) * 0.2;
-        const noise = audioCtx.createBufferSource();
-        noise.buffer = buffer;
-        noise.loop = true;
-        const filter = audioCtx.createBiquadFilter();
-        filter.type = 'bandpass';
-        filter.frequency.value = 3500;
-        filter.Q.value = 2;
-        const gain = audioCtx.createGain();
-        gain.gain.value = 0.12;
-        noise.connect(filter);
-        filter.connect(gain);
-        gain.connect(destination);
-        noise.start();
-        nodes.source = noise;
-
-        const cricket = () => {
-          if (!players.night?.active) return;
-          const osc = audioCtx.createOscillator();
-          const g = audioCtx.createGain();
-          osc.type = 'square';
-          osc.frequency.value = 4200 + Math.random() * 800;
-          g.gain.value = 0;
-          osc.connect(g);
-          g.connect(destination);
-          const now = audioCtx.currentTime;
-          g.gain.linearRampToValueAtTime(0.025, now + 0.01);
-          g.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
-          osc.start(now);
-          osc.stop(now + 0.1);
-          setTimeout(cricket, 200 + Math.random() * 600);
+        setTimeout(chirp, 1200);
+      } else if (id === 'stream') {
+        const src = ctx.createBufferSource();
+        src.buffer = noiseBuf(2, 1); src.loop = true;
+        const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 1400; bp.Q.value = 0.7;
+        const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 500;
+        const g2 = ctx.createGain(); g2.gain.value = 0.28;
+        src.connect(hp); hp.connect(bp); bp.connect(g2); g2.connect(g);
+        src.start(); nodes.src = src;
+      } else if (id === 'cafe') {
+        const src = ctx.createBufferSource();
+        src.buffer = noiseBuf(2.5, 0.3); src.loop = true;
+        const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 850;
+        const g2 = ctx.createGain(); g2.gain.value = 0.24;
+        src.connect(lp); lp.connect(g2); g2.connect(g);
+        src.start(); nodes.src = src;
+      } else if (id === 'night') {
+        const src = ctx.createBufferSource();
+        src.buffer = noiseBuf(2, 0.22); src.loop = true;
+        const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 3400; bp.Q.value = 1.8;
+        const g2 = ctx.createGain(); g2.gain.value = 0.14;
+        src.connect(bp); bp.connect(g2); g2.connect(g);
+        src.start(); nodes.src = src;
+        const click = () => {
+          if (!players.night?.on) return;
+          const o = ctx.createOscillator(); const gg = ctx.createGain();
+          o.type = 'square'; o.frequency.value = 4000 + Math.random()*900; gg.gain.value = 0;
+          o.connect(gg); gg.connect(g);
+          const t = ctx.currentTime;
+          gg.gain.linearRampToValueAtTime(0.022, t+0.008);
+          gg.gain.exponentialRampToValueAtTime(0.001, t+0.07);
+          o.start(t); o.stop(t+0.09);
+          setTimeout(click, 180 + Math.random()*550);
         };
-        setTimeout(cricket, 1000);
-      }
-
-      else if (id === 'thunder') {
-        const bufferSize = 3 * audioCtx.sampleRate;
-        const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-        const data = buffer.getChannelData(0);
-        for (let i = 0; i < bufferSize; i++) data[i] = (Math.random() * 2 - 1) * 0.5;
-        const noise = audioCtx.createBufferSource();
-        noise.buffer = buffer;
-        noise.loop = true;
-        const filter = audioCtx.createBiquadFilter();
-        filter.type = 'lowpass';
-        filter.frequency.value = 180;
-        const gain = audioCtx.createGain();
-        gain.gain.value = 0.3;
-        noise.connect(filter);
-        filter.connect(gain);
-        gain.connect(destination);
-        noise.start();
-        nodes.source = noise;
-
+        setTimeout(click, 800);
+      } else if (id === 'thunder') {
+        const src = ctx.createBufferSource();
+        src.buffer = noiseBuf(3.5, 0.55); src.loop = true;
+        const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 160;
+        const g2 = ctx.createGain(); g2.gain.value = 0.32;
+        src.connect(lp); lp.connect(g2); g2.connect(g);
+        src.start(); nodes.src = src;
         const boom = () => {
-          if (!players.thunder?.active) return;
-          const osc = audioCtx.createOscillator();
-          const g = audioCtx.createGain();
-          osc.type = 'sine';
-          osc.frequency.setValueAtTime(80, audioCtx.currentTime);
-          osc.frequency.exponentialRampToValueAtTime(30, audioCtx.currentTime + 1.5);
-          g.gain.setValueAtTime(0.4, audioCtx.currentTime);
-          g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 2);
-          osc.connect(g);
-          g.connect(destination);
-          osc.start();
-          osc.stop(audioCtx.currentTime + 2.1);
-          setTimeout(boom, 6000 + Math.random() * 12000);
+          if (!players.thunder?.on) return;
+          const o = ctx.createOscillator(); const gg = ctx.createGain();
+          o.type = 'sine'; const t = ctx.currentTime;
+          o.frequency.setValueAtTime(90, t); o.frequency.exponentialRampToValueAtTime(28, t+1.8);
+          gg.gain.setValueAtTime(0.45, t); gg.gain.exponentialRampToValueAtTime(0.001, t+2.2);
+          o.connect(gg); gg.connect(g); o.start(t); o.stop(t+2.3);
+          setTimeout(boom, 5000 + Math.random()*10000);
         };
-        setTimeout(boom, 3000);
+        setTimeout(boom, 2500);
+      } else if (id === 'birds') {
+        const src = ctx.createBufferSource();
+        src.buffer = noiseBuf(2, 0.15); src.loop = true;
+        const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 2000;
+        const g2 = ctx.createGain(); g2.gain.value = 0.08;
+        src.connect(hp); hp.connect(g2); g2.connect(g);
+        src.start(); nodes.src = src;
+        const sing = () => {
+          if (!players.birds?.on) return;
+          const o = ctx.createOscillator(); const gg = ctx.createGain();
+          const f0 = 2200 + Math.random()*1800;
+          o.frequency.setValueAtTime(f0, ctx.currentTime);
+          o.frequency.linearRampToValueAtTime(f0 * (0.85 + Math.random()*0.35), ctx.currentTime + 0.12);
+          gg.gain.value = 0; o.connect(gg); gg.connect(g);
+          const t = ctx.currentTime;
+          gg.gain.linearRampToValueAtTime(0.04, t+0.02);
+          gg.gain.exponentialRampToValueAtTime(0.001, t+0.2);
+          o.start(t); o.stop(t+0.22);
+          setTimeout(sing, 400 + Math.random()*2200);
+        };
+        setTimeout(sing, 600);
       }
-
-      return nodes;
+      return { gain: g, nodes };
     }
 
-    function setVolume(id, vol) {
+    function ensurePlayer(id) {
+      if (players[id]) return players[id];
+      const gain = ctx.createGain();
+      gain.gain.value = 0;
+      gain.connect(master);
+      const { gain: inner, nodes } = createSound(id, gain);
+      players[id] = { gain, inner, nodes, on: false, vol: 0.65 };
+      return players[id];
+    }
+
+    function setVol(id, v) {
       const p = players[id];
       if (!p) return;
-      p.volume = vol;
-      const target = p.active ? vol * masterVol : 0;
-      p.gain.gain.cancelScheduledValues(audioCtx.currentTime);
-      p.gain.gain.linearRampToValueAtTime(target, audioCtx.currentTime + 0.15);
+      p.vol = v;
+      const target = (p.on && !muted) ? v * masterVol : 0;
+      p.gain.gain.cancelScheduledValues(ctx.currentTime);
+      p.gain.gain.linearRampToValueAtTime(target, ctx.currentTime + 0.12);
     }
 
-    function toggleSound(id) {
+    function toggle(id) {
       initAudio();
-      if (audioCtx.state === 'suspended') audioCtx.resume();
-      const p = players[id];
-      if (!p) return;
-      p.active = !p.active;
-      const card = document.querySelector(`[data-sound="${id}"]`);
-      if (card) card.classList.toggle('active', p.active);
-      const target = p.active ? p.volume * masterVol : 0;
-      p.gain.gain.cancelScheduledValues(audioCtx.currentTime);
-      p.gain.gain.linearRampToValueAtTime(target, audioCtx.currentTime + 0.4);
+      if (ctx.state === 'suspended') ctx.resume();
+      const p = ensurePlayer(id);
+      p.on = !p.on;
+      document.querySelector('.card[data-id="'+id+'"]')?.classList.toggle('on', p.on);
+      const target = (p.on && !muted) ? p.vol * masterVol : 0;
+      p.gain.gain.cancelScheduledValues(ctx.currentTime);
+      p.gain.gain.linearRampToValueAtTime(target, ctx.currentTime + 0.35);
+      activePreset = -1;
+      updatePresets();
       updateStatus();
     }
 
-    function stopAll() {
+    function stopAll(fade) {
+      fade = fade || 0.5;
       Object.keys(players).forEach(id => {
         const p = players[id];
-        if (p.active) {
-          p.active = false;
-          p.gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.5);
-          const card = document.querySelector(`[data-sound="${id}"]`);
-          if (card) card.classList.remove('active');
+        if (p.on) {
+          p.on = false;
+          p.gain.gain.linearRampToValueAtTime(0, ctx.currentTime + fade);
+          document.querySelector('.card[data-id="'+id+'"]')?.classList.remove('on');
         }
       });
+      activePreset = -1;
+      updatePresets();
       updateStatus();
+    }
+
+    function applyPreset(idx) {
+      initAudio();
+      if (ctx.state === 'suspended') ctx.resume();
+      const preset = PRESETS[idx];
+      if (!preset) return;
+      Object.keys(players).forEach(id => {
+        const p = players[id];
+        if (p.on && !(id in preset.map)) {
+          p.on = false;
+          p.gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.5);
+          document.querySelector('.card[data-id="'+id+'"]')?.classList.remove('on');
+        }
+      });
+      Object.entries(preset.map).forEach(([id, vol]) => {
+        const p = ensurePlayer(id);
+        p.on = true; p.vol = vol;
+        const card = document.querySelector('.card[data-id="'+id+'"]');
+        if (card) {
+          card.classList.add('on');
+          const slider = card.querySelector('input');
+          if (slider) slider.value = vol;
+        }
+        const target = muted ? 0 : vol * masterVol;
+        p.gain.gain.cancelScheduledValues(ctx.currentTime);
+        p.gain.gain.linearRampToValueAtTime(target, ctx.currentTime + 0.6);
+      });
+      if (Object.keys(preset.map).length === 0) stopAll(0.6);
+      activePreset = idx;
+      updatePresets();
+      updateStatus();
+      toast(preset.name);
     }
 
     function updateStatus() {
-      const active = Object.values(players).filter(p => p.active).length;
-      const el = document.getElementById('status');
-      if (active === 0) {
-        el.innerHTML = 'Tippe auf Sounds, um sie zu mischen';
-      } else {
-        el.innerHTML = `<strong>${active}</strong> Sound${active > 1 ? 's' : ''} aktiv`;
-      }
+      const n = Object.values(players).filter(p => p.on).length;
+      document.getElementById('status').innerHTML = n === 0 ? 'Bereit' : '<b>'+n+'</b> aktiv';
     }
 
-    function setTimer(minutes) {
-      clearInterval(timerInterval);
+    function updatePresets() {
+      document.querySelectorAll('.preset').forEach((el, i) => el.classList.toggle('active', i === activePreset));
+    }
+
+    function setTimer(min) {
+      clearInterval(timerIv);
       timerEnd = null;
-      document.getElementById('timerDisplay').textContent = '';
-      document.querySelectorAll('.timer-chip').forEach(c => c.classList.remove('active'));
-      if (minutes <= 0) return;
-      const chip = document.querySelector(`.timer-chip[data-min="${minutes}"]`);
-      if (chip) chip.classList.add('active');
-      timerEnd = Date.now() + minutes * 60 * 1000;
-      timerInterval = setInterval(() => {
+      const pill = document.getElementById('timerPill');
+      pill.classList.remove('show'); pill.textContent = '';
+      document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+      if (min <= 0) {
+        document.getElementById('btnTimer').classList.remove('active');
+        return;
+      }
+      document.querySelector('.chip[data-m="'+min+'"]')?.classList.add('active');
+      document.getElementById('btnTimer').classList.add('active');
+      timerEnd = Date.now() + min * 60000;
+      pill.classList.add('show');
+      timerIv = setInterval(() => {
         const left = Math.max(0, timerEnd - Date.now());
         if (left <= 0) {
-          clearInterval(timerInterval);
-          document.getElementById('timerDisplay').textContent = '';
-          fadeOutAll();
+          clearInterval(timerIv);
+          pill.classList.remove('show');
+          document.getElementById('btnTimer').classList.remove('active');
+          fadeOut();
+          toast('Timer beendet');
           return;
         }
         const m = Math.floor(left / 60000);
         const s = Math.floor((left % 60000) / 1000);
-        document.getElementById('timerDisplay').textContent = `${m}:${s.toString().padStart(2, '0')}`;
-      }, 250);
+        pill.textContent = m + ':' + String(s).padStart(2,'0');
+      }, 200);
     }
 
-    function fadeOutAll() {
+    function fadeOut() {
       Object.keys(players).forEach(id => {
         const p = players[id];
-        if (p.active) {
-          p.gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 4);
+        if (p.on) {
+          p.gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 5);
           setTimeout(() => {
-            p.active = false;
-            const card = document.querySelector(`[data-sound="${id}"]`);
-            if (card) card.classList.remove('active');
+            p.on = false;
+            document.querySelector('.card[data-id="'+id+'"]')?.classList.remove('on');
             updateStatus();
-          }, 4200);
+          }, 5200);
         }
       });
+      activePreset = -1;
+      updatePresets();
     }
 
-    function buildCards() {
-      const container = document.getElementById('sounds');
-      SOUNDS.forEach(sound => {
+    function toast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      clearTimeout(t._t);
+      t._t = setTimeout(() => t.classList.remove('show'), 1800);
+    }
+
+    function buildUI() {
+      const grid = document.getElementById('grid');
+      SOUNDS.forEach(s => {
         const card = document.createElement('div');
-        card.className = 'sound-card';
-        card.dataset.sound = sound.id;
-        card.innerHTML = `
-          <div class="icon-wrap">${ICONS[sound.id]}</div>
-          <div class="sound-name">${sound.name}</div>
-          <div class="volume-wrap">
-            <input type="range" min="0" max="1" step="0.01" value="0.65" data-vol="${sound.id}" />
-          </div>
-        `;
-        card.addEventListener('click', (e) => {
+        card.className = 'card';
+        card.dataset.id = s.id;
+        card.innerHTML = '<div class="icon">'+ICONS[s.id]+'</div><div class="label">'+s.name+'</div><div class="vol"><input type="range" min="0" max="1" step="0.01" value="0.65" /></div>';
+        card.addEventListener('click', e => {
           if (e.target.matches('input')) return;
-          toggleSound(sound.id);
+          toggle(s.id);
         });
-        card.querySelector('input').addEventListener('input', (e) => {
+        card.querySelector('input').addEventListener('input', e => {
           e.stopPropagation();
-          setVolume(sound.id, parseFloat(e.target.value));
+          setVol(s.id, parseFloat(e.target.value));
         });
-        container.appendChild(card);
+        grid.appendChild(card);
+      });
+      const presets = document.getElementById('presets');
+      PRESETS.forEach((p, i) => {
+        const b = document.createElement('button');
+        b.className = 'preset';
+        b.textContent = p.name;
+        b.addEventListener('click', () => applyPreset(i));
+        presets.appendChild(b);
       });
     }
 
     function initCanvas() {
-      const canvas = document.getElementById('canvas');
-      const ctx = canvas.getContext('2d');
-      let w, h, particles = [];
-
-      function resize() {
-        w = canvas.width = window.innerWidth;
-        h = canvas.height = window.innerHeight;
-      }
+      const c = document.getElementById('canvas');
+      const x = c.getContext('2d');
+      let w, h, parts = [];
+      const resize = () => { w = c.width = innerWidth; h = c.height = innerHeight; };
       resize();
-      window.addEventListener('resize', resize);
-
-      for (let i = 0; i < 60; i++) {
-        particles.push({
-          x: Math.random() * w,
-          y: Math.random() * h,
-          r: Math.random() * 1.6 + 0.4,
-          vx: (Math.random() - 0.5) * 0.15,
-          vy: (Math.random() - 0.5) * 0.15,
-          a: Math.random() * 0.35 + 0.05
-        });
+      addEventListener('resize', resize);
+      for (let i = 0; i < 55; i++) {
+        parts.push({ x:Math.random()*w, y:Math.random()*h, r:Math.random()*1.5+0.3, vx:(Math.random()-0.5)*0.12, vy:(Math.random()-0.5)*0.12, a:Math.random()*0.3+0.04 });
       }
-
-      function draw() {
-        ctx.clearRect(0, 0, w, h);
-        particles.forEach(p => {
-          p.x += p.vx;
-          p.y += p.vy;
-          if (p.x < 0) p.x = w;
-          if (p.x > w) p.x = 0;
-          if (p.y < 0) p.y = h;
-          if (p.y > h) p.y = 0;
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(180, 200, 240, ${p.a})`;
-          ctx.fill();
+      (function draw() {
+        x.clearRect(0,0,w,h);
+        parts.forEach(p => {
+          p.x += p.vx; p.y += p.vy;
+          if (p.x < 0) p.x = w; if (p.x > w) p.x = 0;
+          if (p.y < 0) p.y = h; if (p.y > h) p.y = 0;
+          x.beginPath(); x.arc(p.x, p.y, p.r, 0, Math.PI*2);
+          x.fillStyle = 'rgba(170,195,235,'+p.a+')'; x.fill();
         });
         requestAnimationFrame(draw);
-      }
-      draw();
+      })();
     }
 
-    document.getElementById('startBtn').addEventListener('click', () => {
+    document.getElementById('start').addEventListener('click', () => {
       initAudio();
-      if (audioCtx.state === 'suspended') audioCtx.resume();
-      SOUNDS.forEach(s => createPlayer(s));
-      document.getElementById('intro').classList.add('hidden');
+      if (ctx.state === 'suspended') ctx.resume();
+      document.getElementById('intro').classList.add('hide');
     });
-
-    document.getElementById('stopAllBtn').addEventListener('click', stopAll);
-
-    document.getElementById('masterVolume').addEventListener('input', (e) => {
-      masterVol = parseFloat(e.target.value);
-      if (masterGain) masterGain.gain.value = masterVol;
+    document.getElementById('btnStop').addEventListener('click', () => stopAll());
+    document.getElementById('btnFade').addEventListener('click', () => { fadeOut(); toast('Blendet aus…'); });
+    document.getElementById('btnMute').addEventListener('click', function() {
+      muted = !muted;
+      this.classList.toggle('active', muted);
       Object.keys(players).forEach(id => {
         const p = players[id];
-        if (p.active) {
-          p.gain.gain.setValueAtTime(p.volume * masterVol, audioCtx.currentTime);
-        }
+        if (!p.on) return;
+        p.gain.gain.linearRampToValueAtTime(muted ? 0 : p.vol * masterVol, ctx.currentTime + 0.15);
+      });
+      toast(muted ? 'Stumm' : 'Ton an');
+    });
+    document.getElementById('master').addEventListener('input', e => {
+      masterVol = parseFloat(e.target.value);
+      if (master) master.gain.value = muted ? 0 : masterVol;
+      Object.keys(players).forEach(id => {
+        const p = players[id];
+        if (p.on && !muted) p.gain.gain.setValueAtTime(p.vol * masterVol, ctx.currentTime);
       });
     });
-
-    document.getElementById('timerBtn').addEventListener('click', () => {
-      document.getElementById('timerPanel').classList.toggle('visible');
+    document.getElementById('btnTimer').addEventListener('click', function() {
+      const sheet = document.getElementById('timerSheet');
+      sheet.classList.toggle('open');
+      this.classList.toggle('active', sheet.classList.contains('open') || !!timerEnd);
+    });
+    document.querySelectorAll('.chip').forEach(c => {
+      c.addEventListener('click', () => setTimer(parseInt(c.dataset.m, 10)));
     });
 
-    document.querySelectorAll('.timer-chip').forEach(chip => {
-      chip.addEventListener('click', () => {
-        setTimer(parseInt(chip.dataset.min, 10));
-      });
-    });
-
-    buildCards();
+    buildUI();
     initCanvas();
   </script>
 </body>
